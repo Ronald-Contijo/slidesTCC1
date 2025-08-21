@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Pré-projeto TCC — Dressagem de Rebolos com EA + CNN</title>
+
+  <!-- ✅ Reveal.js v4.x estável -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/theme/black.css" id="theme" />
+  <style>
+    html, body { background:#0d1117; }
+    .reveal { background:#0d1117; color:#e6edf3; font-size:32px; }
+    .reveal .slides { text-align:left; }
+    .reveal .slide-background { background-image:none !important; background:#0d1117 !important; }
+    .reveal section h1, .reveal section h2 { text-transform:none; color:#f0f6fc; }
+    .reveal a { color:#79c0ff; }
+
+    :root{
+      --r-main-font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --r-heading-font: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+      --r-heading-letter-spacing: 0.2px;
+    }
+
+    .reveal ul { line-height:1.4; }
+    .reveal code { font-size:0.9em; }
+
+    .reveal .progress { height:6px; }
+    .reveal .footer{
+      display:none; /* remove footer fixo que borrava texto */
+    }
+    .badge{ display:inline-block; padding:2px 10px; border:1px solid #30363d; border-radius:999px; font-size:0.7em; color:#9da7b3 }
+
+    /* Espaços reservados para imagens */
+    .img-placeholder{
+      width:100%; height:260px; border:2px dashed #555; display:flex; align-items:center; justify-content:center;
+      color:#999; font-size:22px; margin:20px 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="reveal">
+    <div class="slides">
+
+      <!-- CAPA -->
+      <section>
+        <h1>Pré-projeto de TCC</h1>
+        <h2>Monitoramento Inteligente da Dressagem de Rebolos<br/>com Emissão Acústica (EA), STFT e CNN</h2>
+        <p><strong>Orientador:</strong> Dr. Wenderson Nascimento Lopes</p>
+        <p class="small"><strong>Discente:</strong> Ronald José Contijo <strong>Apresentação:</strong> 21/08/2025, 16:20</p>
+        <p class="badge">Proposta</p>
+      </section>
+
+      <!-- TEMA -->
+      <section>
+        <h2>Tema</h2>
+        <ul>   
+          <li>Classificação do estado do rebolo (undressed/dressed) durante a <em>dressagem</em>.</li>
+          <li>Uso de sinais de <strong>Emissão Acústica</strong>, análise <strong>tempo‑frequência (STFT)</strong> e <strong>Redes Convolucionais</strong>.</li>
+          <li>Aplicação em apoio à decisão do operador, visando qualidade e custos.</li>
+        </ul>
+        <div class="img-placeholder"><img src="rebolo.jpg"><img src="conv.png"></div>
+      </section>
+
+      <!-- PROBLEMA / JUSTIFICATIVA -->
+      <section>
+        <h2>Problema e Justificativa</h2>
+        <ul>
+          <li>Momento ideal para interromper a dressagem depende da experiência do operador.</li>
+          <li>Condição do rebolo influencia diretamente a qualidade de retificação e o custo.</li>
+          <li>Abordagem baseada em dados pode padronizar decisões e reduzir falhas.</li>
+        </ul>
+      </section>
+
+      <!-- OBJETIVOS -->
+      <section>
+        <h2>Objetivos</h2>
+        <ul>
+          <li><strong>Geral:</strong> Desenvolver um classificador binário do estado do rebolo durante a dressagem.</li>
+          <li><strong>Específicos:</strong>
+            <ul>
+              <li>Coletar sinais de EA e gerar espectrogramas via STFT (janela Hanning).</li>
+              <li>Treinar/validar uma CNN com imagens (RGB) desses espectrogramas.</li>
+              <li>Definir métrica de avaliação (acurácia e função de perda BCE).</li>
+              <li><strong>Interpretabilidade:</strong> incorporar visualização do “<em>onde a rede olha</em>” na inferência.</li>
+            </ul>
+          </li>
+        </ul>
+        <div><img src="attention.png"></div>
+      </section>
+
+      <!-- METODOLOGIA -->
+      <section>
+        <h2>Metodologia (proposta)</h2>
+        <div class="two-col">
+          <div>
+            <ul>
+              <li><strong>Aquisição:</strong> EA no suporte do dressador; amostragem de alta taxa.</li>
+              <li><strong>Pré-processamento:</strong> recorte do passe de dressagem; STFT (Hanning, 4096; overlap 75%; 8192 FFT).</li>
+              <li><strong>Imagens:</strong> espectrogramas 0–500 kHz; normalização RGB; <code>180×180×3</code>.</li>
+              <li><strong>Modelo CNN:</strong> 3 conv (16/32/64) + MaxPooling → Flatten → Dense(64, ReLU) → Saída(1, sigmoid).</li>
+              <li><strong>Treino/Validação:</strong> BCE; acurácia como métrica; validação com imagens não vistas.</li>
+            </ul>
+          </div>
+          <div>
+            <ul>
+              <li><strong>Rotulagem:</strong> <em>undressed</em> vs <em>dressed</em>.</li>
+              <li><strong>Ferramentas:</strong> Python, TensorFlow/Keras, Jupyter.</li>
+              <li><strong>Viabilidade:</strong> pipeline já demonstrado em estudo-base; replicável no laboratório.</li>
+              <li><strong>Risco:</strong> base reduzida → ampliar dados e variações de ensaio.</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- MECANISMO DE INTERPRETABILIDADE -->
+      <section>
+        <h2>“Onde a rede está olhando”</h2>
+        <ul>
+          <li>Durante a inferência, gerar <strong>mapas de ativação</strong> sobre o espectrograma (p.ex., CAM/Grad‑CAM).
+            <ul>
+              <li>Realçar regiões de tempo‑frequência que mais contribuem para a decisão.</li>
+              <li>Entregável: <em>heatmap</em> sobreposto ao espectrograma da amostra testada.</li>
+            </ul>
+          </li>
+          <li>Objetivo: <strong>transparência</strong> e <strong>confiabilidade</strong> do classificador para o operador.</li>
+        </ul>
+      </section>
+
+
+      <!-- RESULTADOS ESPERADOS -->
+      <section>
+        <h2>Resultados esperados</h2>
+        <ul>
+          <li>Classificador binário confiável para <em>undressed</em> vs <em>dressed</em> na dressagem.</li>
+          <li>Ferramenta de apoio à decisão ao operador (tempo‑real ou quase tempo‑real).</li>
+          <li>Heatmaps explicando decisões da rede em cada amostra inferida.</li>
+        </ul>
+        <div class><img src="imgProj.png"</div>
+      </section>
+
+      <!-- REFERÊNCIA PRINCIPAL -->
+      <section>
+        <h2>Referência principal</h2>
+        <p class="small">
+          <strong>Contijo, R. J.;</strong> Lopes, W. N.; Takeuchi, R. O. A.; de Almeida, J. P. L. S.; Aguiar, P. R. <br/>
+          <em>Monitoramento Inteligente da Operação de Dressagem de Rebolos Convencionais: Uma Nova Metodologia Baseada em EA, STFT e CNN.</em>
+        </p>
+        <p class="small">Ferramentas: Python, TensorFlow/Keras, Jupyter.</p>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/reveal.js@4.5.0/dist/reveal.js"></script>
+  <script>
+    Reveal.initialize({
+      hash:true,
+      slideNumber:true,
+      progress:true,
+      controls:true,
+      center:false,
+      width:1280,
+      height:720,
+      margin:0.06
+    });
+  </script>
+</body>
+</html>
